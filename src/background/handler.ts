@@ -1,6 +1,6 @@
+import { CategorizationService } from "../lib/categorization.ts";
 import { TTab } from "../type/tab.tsx";
 import { flattenBookmarkTreeNode } from "./misc.ts";
-import { CategorizationService } from "../lib/categorization.ts";
 import Fuse from "fuse.js";
 import browser from "webextension-polyfill";
 

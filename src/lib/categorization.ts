@@ -1,11 +1,8 @@
-import browser from "webextension-polyfill";
-import { ECategory, EStorage } from "~/type/misc.ts";
-import {
-  TCategoryCache,
-  TGroupedTabs,
-} from "~/type/categorization.ts";
-import { TTab } from "~/type/tab.tsx";
 import { OpenAIService } from "./openai.ts";
+import browser from "webextension-polyfill";
+import { TCategoryCache, TGroupedTabs } from "~/type/categorization.ts";
+import { ECategory, EStorage } from "~/type/misc.ts";
+import { TTab } from "~/type/tab.tsx";
 
 const CACHE_TTL_MS = 15 * 60 * 1000;
 

@@ -1,5 +1,5 @@
-import browser, { Bookmarks, History } from "webextension-polyfill";
 import { ECategory } from "./misc.ts";
+import browser, { Bookmarks, History } from "webextension-polyfill";
 
 import BookmarkTreeNode = Bookmarks.BookmarkTreeNode;
 import HistoryItem = History.HistoryItem;

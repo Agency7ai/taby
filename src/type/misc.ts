@@ -44,17 +44,15 @@ export enum ECategory {
   Other = "other",
 }
 
-export const CATEGORY_META: Record<
-  ECategory,
-  { icon: string; label: string }
-> = {
-  [ECategory.Research]: { icon: "📚", label: "Research" },
-  [ECategory.Development]: { icon: "💻", label: "Development" },
-  [ECategory.Entertainment]: { icon: "🎬", label: "Entertainment" },
-  [ECategory.Shopping]: { icon: "🛒", label: "Shopping" },
-  [ECategory.Social]: { icon: "👥", label: "Social" },
-  [ECategory.Productivity]: { icon: "✅", label: "Productivity" },
-  [ECategory.News]: { icon: "📰", label: "News" },
-  [ECategory.Communication]: { icon: "💬", label: "Communication" },
-  [ECategory.Other]: { icon: "📄", label: "Other" },
-};
+export const CATEGORY_META: Record<ECategory, { icon: string; label: string }> =
+  {
+    [ECategory.Research]: { icon: "📚", label: "Research" },
+    [ECategory.Development]: { icon: "💻", label: "Development" },
+    [ECategory.Entertainment]: { icon: "🎬", label: "Entertainment" },
+    [ECategory.Shopping]: { icon: "🛒", label: "Shopping" },
+    [ECategory.Social]: { icon: "👥", label: "Social" },
+    [ECategory.Productivity]: { icon: "✅", label: "Productivity" },
+    [ECategory.News]: { icon: "📰", label: "News" },
+    [ECategory.Communication]: { icon: "💬", label: "Communication" },
+    [ECategory.Other]: { icon: "📄", label: "Other" },
+  };
