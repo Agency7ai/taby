@@ -12,7 +12,13 @@ import browser from "webextension-polyfill";
 
 browser.runtime.onInstalled.addListener(async function () {
   await browser.storage.local
-    .get([EStorage.Appearance, EStorage.PopupWindow, EStorage.Scroll])
+    .get([
+      EStorage.Appearance,
+      EStorage.PopupWindow,
+      EStorage.Scroll,
+      EStorage.OpenAIKey,
+      EStorage.EnableCategorization,
+    ])
     .then(async function (storage) {
       const promises = [];
       if (!storage[EStorage.Appearance]) {
@@ -33,6 +39,20 @@ browser.runtime.onInstalled.addListener(async function () {
         promises.push(
           browser.storage.local.set({
             [EStorage.Scroll]: EScroll.Default,
+          }),
+        );
+      }
+      if (!storage[EStorage.OpenAIKey]) {
+        promises.push(
+          browser.storage.local.set({
+            [EStorage.OpenAIKey]: "",
+          }),
+        );
+      }
+      if (storage[EStorage.EnableCategorization] === undefined) {
+        promises.push(
+          browser.storage.local.set({
+            [EStorage.EnableCategorization]: false,
           }),
         );
       }

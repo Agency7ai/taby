@@ -1,4 +1,5 @@
 import browser, { Bookmarks, History } from "webextension-polyfill";
+import { ECategory } from "./misc.ts";
 
 import BookmarkTreeNode = Bookmarks.BookmarkTreeNode;
 import HistoryItem = History.HistoryItem;
@@ -10,6 +11,7 @@ export class TTab {
   id: number | null;
   key: number | null;
   favIconUrl: string | null;
+  category?: ECategory;
 
   constructor(
     title: string,
@@ -18,6 +20,7 @@ export class TTab {
     id: number | null,
     key: number | null,
     favIconUrl: string | null,
+    category?: ECategory,
   ) {
     this.title = title;
     this.id = id;
@@ -25,9 +28,14 @@ export class TTab {
     this.idx = idx;
     this.url = url;
     this.favIconUrl = favIconUrl;
+    this.category = category;
   }
 
-  static fromTab(tab: browser.Tabs.Tab, index: number): TTab {
+  static fromTab(
+    tab: browser.Tabs.Tab,
+    index: number,
+    category?: ECategory,
+  ): TTab {
     return new TTab(
       tab.title || "",
       tab.url || "",
@@ -35,10 +43,15 @@ export class TTab {
       tab.id || 0,
       index + 1,
       tab.favIconUrl || "",
+      category,
     );
   }
 
-  static fromBookmark(bookmark: BookmarkTreeNode, idx: number): TTab {
+  static fromBookmark(
+    bookmark: BookmarkTreeNode,
+    idx: number,
+    category?: ECategory,
+  ): TTab {
     return new TTab(
       bookmark.title || "",
       bookmark.url || "",
@@ -46,10 +59,15 @@ export class TTab {
       null,
       null,
       null,
+      category,
     );
   }
 
-  static fromHistory(history: HistoryItem, idx: number): TTab {
+  static fromHistory(
+    history: HistoryItem,
+    idx: number,
+    category?: ECategory,
+  ): TTab {
     return new TTab(
       history.title || "",
       history.url || "",
@@ -57,6 +75,7 @@ export class TTab {
       null,
       null,
       null,
+      category,
     );
   }
 }

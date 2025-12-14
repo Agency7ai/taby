@@ -1,5 +1,6 @@
 import { TTab } from "../type/tab.tsx";
 import { flattenBookmarkTreeNode } from "./misc.ts";
+import { CategorizationService } from "../lib/categorization.ts";
 import Fuse from "fuse.js";
 import browser from "webextension-polyfill";
 
@@ -36,21 +37,24 @@ export const handleRequestSearchOpenTabs = async function (
     (tab) => tab.url !== "about:firefoxview" && tab.title !== "Firefox View",
   );
 
+  let tabResults: TTab[];
+
   if (content === "") {
-    return tabs.map(TTab.fromTab);
+    tabResults = tabs.map(TTab.fromTab);
+  } else {
+    const options = {
+      keys: ["title", "url", "key"],
+    };
+    const fuse = new Fuse(tabs.map(TTab.fromTab), options);
+    tabResults = fuse.search(content).map(function (tab, idx) {
+      return {
+        ...tab.item,
+        idx,
+      };
+    });
   }
 
-  const options = {
-    keys: ["title", "url", "key"],
-  };
-  const fuse = new Fuse(tabs.map(TTab.fromTab), options);
-
-  return fuse.search(content).map(function (tab, idx) {
-    return {
-      ...tab.item,
-      idx,
-    };
-  });
+  return await CategorizationService.categorizeTabs(tabResults, "tabs");
 };
 
 export const handleRequestSearchBookmarks = async function (
@@ -58,18 +62,26 @@ export const handleRequestSearchBookmarks = async function (
 ): Promise<TTab[]> {
   const bookmarks = flattenBookmarkTreeNode(await browser.bookmarks.getTree());
 
+  let bookmarkResults: TTab[];
+
   if (content === "") {
-    return bookmarks.map((bookmark, idx) => TTab.fromBookmark(bookmark, idx));
+    bookmarkResults = bookmarks.map((bookmark, idx) =>
+      TTab.fromBookmark(bookmark, idx),
+    );
+  } else {
+    const options = {
+      keys: ["title", "url"],
+    };
+    const fuse = new Fuse(bookmarks, options);
+    bookmarkResults = fuse.search(content).map(function (bookmark, idx): TTab {
+      return TTab.fromBookmark(bookmark.item, idx);
+    });
   }
 
-  const options = {
-    keys: ["title", "url"],
-  };
-  const fuse = new Fuse(bookmarks, options);
-
-  return fuse.search(content).map(function (bookmark, idx): TTab {
-    return TTab.fromBookmark(bookmark.item, idx);
-  });
+  return await CategorizationService.categorizeTabs(
+    bookmarkResults,
+    "bookmarks",
+  );
 };
 
 export const handleRequestSearchHistory = async function (
@@ -81,16 +93,21 @@ export const handleRequestSearchHistory = async function (
     startTime: 0,
   });
 
+  let historyResults: TTab[];
+
   if (content === "") {
-    return history.map((history, idx) => TTab.fromHistory(history, idx));
+    historyResults = history.map((history, idx) =>
+      TTab.fromHistory(history, idx),
+    );
+  } else {
+    const options = {
+      keys: ["title", "url"],
+    };
+    const fuse = new Fuse(history, options);
+    historyResults = fuse.search(content).map(function (history, idx): TTab {
+      return TTab.fromHistory(history.item, idx);
+    });
   }
 
-  const options = {
-    keys: ["title", "url"],
-  };
-  const fuse = new Fuse(history, options);
-
-  return fuse.search(content).map(function (history, idx): TTab {
-    return TTab.fromHistory(history.item, idx);
-  });
+  return await CategorizationService.categorizeTabs(historyResults, "history");
 };

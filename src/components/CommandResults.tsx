@@ -1,9 +1,10 @@
 import { moveDown, moveUp } from "../lib/window.ts";
 import { TTab } from "../type/tab.tsx";
-import { RefObject, useEffect, useRef } from "react";
+import { RefObject, useEffect, useRef, useMemo } from "react";
 import { TGoToOptions } from "~/components/Command.tsx";
 import { cn } from "~/lib/utils.ts";
-import { EScroll } from "~/type/misc.ts";
+import { EScroll, CATEGORY_META } from "~/type/misc.ts";
+import { CategorizationService } from "~/lib/categorization.ts";
 
 interface TTabResultsProps {
   elements: RefObject<TTab[]>;
@@ -32,6 +33,28 @@ function CommandResults({
 }: TTabResultsProps) {
   const start = useRef(0);
   const end = useRef(capacity);
+
+  const groupedTabs = useMemo(() => {
+    const tabs = elements.current;
+    const hasCategorization = tabs.some((tab) => tab.category !== undefined);
+
+    if (!hasCategorization) {
+      return [{ category: null, tabs }];
+    }
+
+    const grouped = CategorizationService.groupTabsByCategory(tabs);
+
+    // Re-index tabs to match visual order after grouping
+    let visualIndex = 0;
+    grouped.forEach((group) => {
+      group.tabs.forEach((tab) => {
+        tab.idx = visualIndex++;
+      });
+    });
+
+    return grouped;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [elements.current]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -116,46 +139,61 @@ function CommandResults({
     <>
       {elements.current.length > 0 && (
         <ul className="taby-searchList border-input/50 m-0 flex h-full list-none flex-col overflow-scroll border-0 border-t-2 border-solid p-[8px]">
-          {elements.current.slice(start.current, end.current).map((element) => (
-            <div
-              key={element.idx}
-              className={cn(
-                "flex items-center gap-[16px] overflow-x-clip rounded p-[6px] whitespace-nowrap select-none",
-                selectedElement.current !== null &&
-                  element.idx === selectedElement.current &&
-                  "bg-secondary",
+          {groupedTabs.map((group) => (
+            <div key={group.category || "default"}>
+              {group.category && (
+                <div className="text-muted-foreground sticky top-0 bg-background/95 backdrop-blur px-2 py-2 text-xs font-semibold uppercase tracking-wider">
+                  {CATEGORY_META[group.category].icon}{" "}
+                  {CATEGORY_META[group.category].label}
+                </div>
               )}
-              onClick={(e) => handleOnClick(element.idx, e.ctrlKey)}
-            >
-              {element.key != null && (
-                <span
-                  className={cn(
-                    "text-foreground flex w-[20px] shrink-0 items-center justify-end font-sans text-[14px] leading-[21px] font-bold",
-                    element.idx === selectedElement.current &&
-                      "text-secondary-foreground",
-                  )}
-                >
-                  {element.key}
-                </span>
-              )}
-              {element.favIconUrl != null && element.favIconUrl !== "" ? (
-                <img
-                  src={element.favIconUrl}
-                  className="m-0 flex h-[18px] w-[18px] items-center"
-                  alt=""
-                />
-              ) : (
-                <div className="h-[18px] w-[18px] shrink-0" />
-              )}
-              <span
-                className={cn(
-                  "text-foreground font-sans text-[14px] leading-[21px] font-normal",
-                  element.idx === selectedElement.current &&
-                    "text-secondary-foreground",
-                )}
-              >
-                {element.title}
-              </span>
+
+              {group.tabs
+                .filter(
+                  (tab) => tab.idx >= start.current && tab.idx < end.current,
+                )
+                .map((element) => (
+                  <div
+                    key={element.idx}
+                    className={cn(
+                      "flex items-center gap-[16px] overflow-x-clip rounded p-[6px] whitespace-nowrap select-none",
+                      selectedElement.current !== null &&
+                        element.idx === selectedElement.current &&
+                        "bg-secondary",
+                    )}
+                    onClick={(e) => handleOnClick(element.idx, e.ctrlKey)}
+                  >
+                    {element.key != null && (
+                      <span
+                        className={cn(
+                          "text-foreground flex w-[20px] shrink-0 items-center justify-end font-sans text-[14px] leading-[21px] font-bold",
+                          element.idx === selectedElement.current &&
+                            "text-secondary-foreground",
+                        )}
+                      >
+                        {element.key}
+                      </span>
+                    )}
+                    {element.favIconUrl != null && element.favIconUrl !== "" ? (
+                      <img
+                        src={element.favIconUrl}
+                        className="m-0 flex h-[18px] w-[18px] items-center"
+                        alt=""
+                      />
+                    ) : (
+                      <div className="h-[18px] w-[18px] shrink-0" />
+                    )}
+                    <span
+                      className={cn(
+                        "text-foreground font-sans text-[14px] leading-[21px] font-normal",
+                        element.idx === selectedElement.current &&
+                          "text-secondary-foreground",
+                      )}
+                    >
+                      {element.title}
+                    </span>
+                  </div>
+                ))}
             </div>
           ))}
         </ul>

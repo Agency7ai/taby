@@ -8,6 +8,8 @@ import {
   handleSelectAppearance,
   handleSelectPopupWindow,
   handleSelectScroll,
+  handleSelectOpenAIKey,
+  handleSelectEnableCategorization,
 } from "~/lib/storage";
 import { EAppearance, EPopupWindow, EStorage, EScroll } from "~/type/misc";
 
@@ -15,10 +17,19 @@ function Settings() {
   const [theme, setTheme] = useState<EAppearance>(EAppearance.Light);
   const [isFixed, setIsFixed] = useState<EPopupWindow>(EPopupWindow.Fixed);
   const [scroll, setScroll] = useState<EScroll>(EScroll.Default);
+  const [openAIKey, setOpenAIKey] = useState<string>("");
+  const [enableCategorization, setEnableCategorization] =
+    useState<boolean>(false);
 
   useEffect(() => {
     browser.storage.local
-      .get([EStorage.Appearance, EStorage.PopupWindow, EStorage.Scroll])
+      .get([
+        EStorage.Appearance,
+        EStorage.PopupWindow,
+        EStorage.Scroll,
+        EStorage.OpenAIKey,
+        EStorage.EnableCategorization,
+      ])
       .then((storage) => {
         setTheme(
           (storage[EStorage.Appearance] as EAppearance) || EAppearance.Light,
@@ -28,6 +39,10 @@ function Settings() {
             EPopupWindow.UnFixed,
         );
         setScroll((storage[EStorage.Scroll] as EScroll) || EScroll.Default);
+        setOpenAIKey((storage[EStorage.OpenAIKey] as string) || "");
+        setEnableCategorization(
+          (storage[EStorage.EnableCategorization] as boolean) || false,
+        );
       });
   }, []);
 
@@ -44,6 +59,16 @@ function Settings() {
   const updateScroll = async (value: EScroll) => {
     setScroll(value);
     await handleSelectScroll(value);
+  };
+
+  const updateOpenAIKey = async (value: string) => {
+    setOpenAIKey(value);
+    await handleSelectOpenAIKey(value);
+  };
+
+  const updateEnableCategorization = async (value: boolean) => {
+    setEnableCategorization(value);
+    await handleSelectEnableCategorization(value);
   };
 
   return (
@@ -109,6 +134,51 @@ function Settings() {
           <p className="text-muted-foreground text-sm">
             Fixed displays the popup at its maximum size. Floating displays the
             popup at its minimum size.
+          </p>
+        </div>
+
+        <Separator />
+
+        <h1 className="text-xl font-bold">AI Categorization</h1>
+
+        <div className="flex flex-col space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="enable-categorization">Enable Categorization</Label>
+            <Switch
+              id="enable-categorization"
+              checked={enableCategorization}
+              onCheckedChange={(checked) => {
+                updateEnableCategorization(checked);
+              }}
+            />
+          </div>
+          <p className="text-muted-foreground text-sm">
+            Automatically group tabs, bookmarks, and history by activity using
+            OpenAI.
+          </p>
+        </div>
+
+        <div className="flex flex-col space-y-2">
+          <Label htmlFor="openai-key">OpenAI API Key</Label>
+          <input
+            id="openai-key"
+            type="password"
+            value={openAIKey}
+            onChange={(e) => setOpenAIKey(e.target.value)}
+            onBlur={(e) => updateOpenAIKey(e.target.value)}
+            placeholder="sk-..."
+            className="border-input bg-background ring-offset-background focus:ring-ring rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-hidden"
+          />
+          <p className="text-muted-foreground text-sm">
+            Enter your OpenAI API key. Get one at{" "}
+            <a
+              href="https://platform.openai.com/api-keys"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline"
+            >
+              platform.openai.com
+            </a>
           </p>
         </div>
       </div>
